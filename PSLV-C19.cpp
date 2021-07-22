@@ -3,25 +3,29 @@
 #include <stdio.h>
 #include <string.h>
 
+#define ROCKET_CONE 1
+#define ROCKET_BODY 2
+
 static double x = 0.0, x1 = 0.0, y1 = 0.1, z1 = 0.0, r = 0, y2 = 0, z2 = 0;
 
 // Variable and their usage:
 // x used for : positioning and monitoring of all objects
 // x1 & y1 & z1 used for : right and left rockets
-// r used for : rotation of main cone, satellite container, left & right rockets
-// y2 used for : backward positioning of satellite container
-// z2 used for : downward positioning of main cone
+// r used for : rotation of main cone, satellite container, left & right
+// rockets y2 used for : backward positioning of satellite container z2 used
+// for : downward positioning of main cone
 
 // pivotal points for x:
 // At 0.0 - program starts
 // At 2.0 - Rocket obtains its stationary position and starts to detach
-// At 3.0 - Side rockets starts to detach and roates wrt r factor and x1, y1, z1
-// positions At 5.0 - satellite container will detach and rotates wrt r factor
-// and moves backward wrt y2 At 5.5 - Main cone of rocket detaches and starts
-// falling by rotating wrt r factor and z2 positioning At 6.0 - Satellite body
-// changes to solid cube form torus and panels will appear At 6.5 - Earth
-// obtains its stationary position and starts rotating wrt y axis and x factor
-// At 6.8 - Satellite obtains its position and starts rotating
+// At 3.0 - Side rockets starts to detach and roates wrt r factor and x1, y1,
+// z1 positions At 5.0 - satellite container will detach and rotates wrt r
+// factor and moves backward wrt y2 At 5.5 - Main cone of rocket detaches and
+// starts falling by rotating wrt r factor and z2 positioning At 6.0 -
+// Satellite body changes to solid cube form torus and panels will appear
+// At 6.5 - Earth obtains its stationary position and starts rotating wrt y
+// axis and x factor At 6.8 - Satellite obtains its position and starts
+// rotating
 
 void stroke_output(GLfloat x, GLfloat y, GLfloat a, GLfloat b, GLfloat c,
                    GLint m, const char *format, ...) {
@@ -140,45 +144,33 @@ void rocket() {
 
   glPushMatrix();            // Complete rightSide rocket
   glTranslatef(x1, -y1, z1); // Moves right and down
-  glRotatef(r, 0, 1, 1);     // Rotates anti-clock wise along y & z axis
+  glRotatef(r, 0, 1, 1);     // Rotates anti-clock_t wise along y & z axis
 
   glPushMatrix(); // Right cone
   glTranslatef(0.7, 1, 0);
-  glColor3f(1, 0.22, 0.22);
-  glScaled(1.5, 1, 1.5);
-  glRotatef(270, 1, 0, 0);
-  glutSolidCone(0.2, 1, 30, 30); // base, height, slices, stacks
-  glPopMatrix();                 // Right cone
+  glCallList(ROCKET_CONE);
+  glPopMatrix(); // Right cone
 
   glPushMatrix(); // Right body
   glTranslatef(0.7, -0.2, 0);
-  glColor3f(1, 1, 1);
-  glScaled(0.2, 6.5, 0.2);
-  glRotatef(90, 1, 0, 0);
-  glutSolidTorus(0.2, 1, 30, 30); // iRadius, oRadius, noSides, noRings
-  glPopMatrix();                  // Right body
+  glCallList(ROCKET_BODY);
+  glPopMatrix(); // Right body
 
   glPopMatrix(); // Complete rightSide rocket
 
   glPushMatrix();             // Complete LeftSide rocket
   glTranslatef(-x1, -y1, z1); // Moves left and down
-  glRotatef(-r, 0, 1, 1);     // Rotates clock-wise along y & z axis
+  glRotatef(-r, 0, 1, 1);     // Rotates clock_t-wise along y & z axis
 
   glPushMatrix(); // Left cone
   glTranslatef(-0.7, 1, 0);
-  glColor3f(1, 0.22, 0.22);
-  glScaled(1.5, 1, 1.5);
-  glRotatef(270, 1, 0, 0);
-  glutSolidCone(0.2, 1, 30, 30); // base, height, slices, stacks
-  glPopMatrix();                 // Left cone
+  glCallList(ROCKET_CONE);
+  glPopMatrix(); // Left cone
 
   glPushMatrix(); // Left body
   glTranslatef(-0.7, -0.2, 0);
-  glColor3f(1, 1, 1);
-  glScaled(0.2, 6.5, 0.2);
-  glRotatef(90, 1, 0, 0);
-  glutSolidTorus(0.2, 1, 30, 30); // iRadius, oRadius, noSides, noRings
-  glPopMatrix();                  // Left body
+  glCallList(ROCKET_BODY);
+  glPopMatrix(); // Left body
 
   glPopMatrix(); // Complete LeftSide rocket
 }
@@ -189,7 +181,6 @@ void pslv(double x) {
 
   glLoadIdentity();
   glTranslatef(0.0f, 0.0f, -13.0f);
-
   glPushMatrix(); // Complete rocket containing satellite
 
   if (x <= 2) {
@@ -243,7 +234,36 @@ void start() {
   pslv(x);
 }
 
+// void start_animation() {
+//   static long timestamp = clock_t();
+//   // First frame will have zero delta, but this is just an example.
+//   float delta = (float)(clock_t() - timestamp);
+
+//   start(delta);
+
+//   timestamp = clock_t();
+// }
+
 void doInit() {
+  // Creating display list for side rocket cones
+  glNewList(ROCKET_CONE, GL_COMPILE);
+  glPushMatrix();
+  glColor3f(1, 0.22, 0.22);
+  glScaled(1.5, 1, 1.5);
+  glRotatef(270, 1, 0, 0);
+  glutSolidCone(0.2, 1, 30, 30);
+  glPopMatrix();
+  glEndList();
+
+  // Creating display lists for side rocket bodies
+  glNewList(ROCKET_BODY, GL_COMPILE);
+  glPushMatrix();
+  glColor3f(1, 1, 1);
+  glScaled(0.2, 6.5, 0.2);
+  glRotatef(90, 1, 0, 0);
+  glutSolidTorus(0.2, 1, 30, 30);
+  glPopMatrix();
+  glEndList();
   // Background and foreground color
   glClearColor(0.0, 0.0, 0.0, 0);
   glViewport(0, 0, 640, 480);
@@ -367,8 +387,8 @@ int main(int argc, char *argv[]) {
   glutKeyboardFunc(key_input);
 
   glutCreateMenu(menu);
-  glutAddMenuEntry("Launch PSLV-C19	or	press P", 1);
-  glutAddMenuEntry("Quit	or	press Q", 2);
+  glutAddMenuEntry("Launch PSLV-C19	or	press L", 1);
+  glutAddMenuEntry("Abort mission	or	press Q", 2);
   glutAttachMenu(GLUT_RIGHT_BUTTON);
 
   doInit();
